@@ -164,10 +164,86 @@ This is collecting metrics tool on a Linux Host
 | `static_configs:`<br>     `- targets: [IP_address]` | scrape targets at the IP address                                      |
 
 #### Node Exporter TLS (Authentication/Encryption):-
+Create a openssl certificate on a node using the openssl command
+ set up the TLS process please check this below link
+https://ruan.dev/blog/2021/10/10/setup-basic-authentication-on-node-exporter-and-prometheus
+
+#### Prometheus Metrics:
+![[Pasted image 20250106210606.png]]
+
+###### Time Stamp:-
+When Prometheus scrapes a target and retrieves metrics, it also stores the time at which the metric was scraped as well
+The ***timestamp*** will look like this: `1668242900`
+This is called a ***unix timestamp***, which is the number of seconds that have elapsed since Epoch(January 1st 1970 UTC)
+
+##### Prometheus Time Series:
+Stream of timestamped values sharing the same metric and set of labels
+
+Metrics have a TYPE and HELP attribute
+HELP -- description of what the metric is
+TYPE -- Specifies what type of metric(counter, gauge, histogram, summary)
+![[Pasted image 20250106211716.png]]
+***counter*** 
+- How many times did x happen
+- Number can only increase
+EX:-  Total requests, Total Exceptions, Total of job executions
+***Gauge***
+- What is the current value of x
+- Can go up and Down
+Ex:- Current CPU Utilisation, Available system memory, number of concurrent request
+***Histogram***
+- How long or how big something is
+- Groups observations into configurable bucket sizes(<,>)
+![[Pasted image 20250106213041.png]]
+***Summary***
+- Similar to histograms (track how long or how big)
+- How many observations fell below x
+![[Pasted image 20250106213259.png]]
+
+***Labels***
+- Labels are Key-value pairs associated with a metric
+- Allows you to split up a metric by a specified criteria
+- Metric can have more then one label
+- ASCII letters, numbers, underscores
+- Must match regex [a-z,A-Z,0-9_]*
+Every metric is assigned 2 labels by default(***instance*** and ***job***)
+![[Pasted image 20250106214448.png]]
+
+#### Prom tools:
+ its a utility tool shipped with prometheus that can be used to:
+ - Check and validate configuration
+	 - validate prometheus.yml
+	 - validate rule files
+ - validate metrics passed to it are correctly formatted
+ - can perform queries on a prometheus server
+ - Debugging & profiling a prometheus server
+ `promtool check config /etc/prometheus/prometheus.yml`
+
+#### Container Metrics:
+- Metrics can also be scraped from containerised environments 
+- Docker Engine metrics 
+- Container metrics using cAdvisor
+
+##### Docker Engine metrics :-(if you want information of Docker Engine host )
+`vi /etc/docker/daemon.json`
+![[Pasted image 20250106220844.png]]
+`sudo systemctl restart docker`
+`curl localhost:9323/metrics`
+Prometheus config file add new job like below
+![[Pasted image 20250106221111.png]]
+
+##### cAdvisor Metrics(if you want information of containers )
+![[Pasted image 20250106221357.png]]
+Prometheus config add new job for cAdvisor
+![[Pasted image 20250106221513.png]]
 
 
-
-
+| ***Docker Engine metrics***         | ***cAdvisor metrics***                         |
+| ----------------------------------- | ---------------------------------------------- |
+| How much cpu does docker use        | How much cpu/mem does each container use       |
+| Total number of failed image builds | Number of processes running inside a container |
+| Time to process container actions   | Container up time                              |
+| No metrics specfic to a container   | Metrics on a per container basics              |
 
 
 
