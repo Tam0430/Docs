@@ -9,6 +9,13 @@ Observability will help:
 	4. Monitor performance of an application
 	5. Improve cross-team collaboration
 
+#### Generic cloud provider
+Working mechanism 
+1. scrape interval -- 15 sec to 1 min
+2. TSDB -- Time series database
+3. Node exporter -- only linux--> agent --> port 9100
+prometheus port number  --> 9090
+
 #### 3 Pillars of Observability
 How do we accomplish observability
 	1. [Logging]
@@ -244,7 +251,66 @@ Prometheus config add new job for cAdvisor
 | Total number of failed image builds | Number of processes running inside a container |
 | Time to process container actions   | Container up time                              |
 | No metrics specfic to a container   | Metrics on a per container basics              |
+### PromQL
+- Short for prometheus Query Language
+- Main way to query metrics within prometheus 
+- Data returned can be visualized in dashboards
+- Used to build alerting rules to notify administrators.
+###### ***A PromQL expression can evaluate to one of four types:
+1. String - a simple string value (currently unused)
+2. Scalar - a simple numeric floating point value
+3. Instant Vector - set of time series containing a single sample for each time series, all sharing the same timestamp
+4. Range Vector - set of time series containing a range of data points over time for each time series.
+##### ***Label Matchers***:-
+`=`    Exact mach on a Label value
+- Return all time series from node1
+	$ node_filesystem_avail_bytes{instance="node1"}
+  instance="node1" will match all time series from node01
+  
+`!=`  Negative equality matcher - return time series that don't have the label.
+- Return all time series where device is not equal to "tmpfs"
+	$ node_filesystem_avail_bytes{device!="tmpfs"}
+  != matcher will ensure that only devices that are not "tmpfs"
+  
+`=~`  Regular expression matcher - matches time series with labels match regex
+- Return all time series where device starts with "/dev/sda" (sda2&sda3)
+	$ node_filesystem_avail_bytes{device=~"/dev/sda.* "}
+  To match anything that starts with /dev/sda, a regex "/dev/sda.* " will need to be used 
+
+`!~`  Negative regular expression matcher 
+- Return all time series where mountpoint does not start with "/boot"
+	$ node_filesystem_avail_bytes{mountpoint!~"/boot.* "}
+  To match anything that starts with "/boot", a regex "/boot.* " will need to be
+###### ***Multiple Selectors:-
+- Return all time series from node1 without a "device=tmpfs"
+	$ node_filesystem_avail_bytes{instance="node1", device!="tmpfs"}
+  Multiple selectors can be used by separating them by a comma
+###### ***Range Vector Selectors:-
+- Return all the values for a metric over a period of time
+	$ node_arp_entries{instance="node1"}[2m]
+  Return node_arp_entries metric data for the past 2 minutes.
+
+Time Series converter:
+  epoach & unix timestamp conversion tools --> website
+
+##### PromQL has 3 logical operators
+1. OR
+2. AND 
+3. Unless
+
+#### Vector Matching
+- one-to-one vector matching - Every element in the vector on the left of the operator tries to find a single matching element on the right
+- Many-to-One vector matching - Each vector elements on the one side can match with multiple elements on the many side
 
 
-
+##### Kube-State-Metrics
+- To collect cluster level metrics(pods, deployments, etc) the kube-state-metrics container must be deployed
+##### Node Exporter
+Every host should run a node_exporter to expose cpu, memory, and network stats
+We can manually go in an install a node_exporter on every node
+Better option is to use a kubernetes daemonSet -pod that runs on every node in the cluster
+##### Service Monitoring
+- Service monitor define a set of targets for prometheus to monitor and scrape 
+- They allow you to avoid touching prometheus configs directly and give you a declarative kubernetes syntax to define targets
+- 
 
